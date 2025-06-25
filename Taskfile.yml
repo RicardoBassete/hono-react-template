@@ -1,0 +1,76 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+version: '3'
+
+# defines the method of checking for file changes
+method: timestamp
+
+tasks:
+  default:
+    silent: true
+    desc: List all tasks
+    cmds:
+      - task --list-all
+
+  deploy:
+    silent: true
+    desc: Builds the frontend app and runs the backend server
+    cmds:
+      - task: vite-build
+      - task: server-start
+
+  # Frontend tasks
+
+  vite-dev:
+    silent: true
+    dir: ./frontend
+    desc: Runs vite dev server
+    deps:
+      - frontend-install
+    cmd: bun dev
+
+  vite-build:
+    silent: true
+    dir: ./frontend
+    desc: Runs vite build
+    deps:
+      - frontend-install
+    cmd: bun run build
+
+  frontend-install:
+    dir: ./frontend
+    desc: Install deps
+    internal: true
+    status:
+      - test -d node_modules # triggers if node_modules does not exists
+    sources: # triggers if one of these files changes based on the defined method
+      - package.json
+      - bun.lock
+    cmds:
+      - bun install
+
+  # Backend tasks
+
+  server-start:
+    silent: true
+    desc: Runs hono server
+    deps:
+      - server-install
+    cmd: bun start
+
+  server-dev:
+    silent: true
+    desc: Runs hono dev server
+    deps:
+      - server-install
+    cmd: bun dev
+
+  server-install:
+    desc: Install deps
+    internal: true
+    status:
+      - test -d node_modules # triggers if node_modules does not exists
+    sources: # triggers if one of these files changes based on the defined method
+      - package.json
+      - bun.lock
+    cmds:
+      - bun install
